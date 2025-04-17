@@ -1,0 +1,32 @@
+{
+  "local": {
+    "username": "neptune",
+    "password": "1111",
+    "database": "claw_db",
+    "host": "localhost",
+    "port": "63306",
+    "dialect": "mysql",
+    "timezone": "+09:00",
+    "logging": true
+  },
+  "development": {
+      "username": "neptune",
+      "password": "1111",
+      "database": "claw_db",
+      "host": "localhost",
+      "port": "63306",
+      "dialect": "mysql",
+      "timezone": "+09:00",
+      "logging": true
+  },
+  "production": {
+    "username": "daol365",
+    "password": "Snowman13!#",
+    "database": "daol365_db",
+    "host": "1.234.27.145",
+    "port": "23306",
+    "dialect": "mysql",
+    "timezone": "+09:00",
+    "logging": false
+  }
+}

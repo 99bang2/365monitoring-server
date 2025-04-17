@@ -1,0 +1,48 @@
+###
+POST http://localhost:4000/api/v1/signup
+Content-Type: application/json
+
+{
+  "email": "dalmooria@naver.com",
+  "name": "조성우2",
+  "phone": "01012341234",
+  "password": "snowman12!@"
+}
+
+###
+POST http://localhost:4000/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "dalmooria@naver.com",
+  "name": "조성우",
+  "phone": "01012341234",
+  "password": "snowman12!@"
+}
+
+### 디바이스 리스트
+GET http://localhost:4000/api/v1/device/list
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsImVtYWlsIjoiZGFsbW9vcmlhQG5hdmVyLmNvbSIsImlhdCI6MTczNjM5Mjk0NiwiZXhwIjoxNzM2Mzk2NTQ2fQ.vudjlTNBF1GM_6xEjTgPBfreo_DOJEZtZ-AimqDXcBM
+
+{
+}
+
+### 디바이스 추가
+POST http://localhost:4000/api/v1/device/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsImVtYWlsIjoiZGFsbW9vcmlhQG5hdmVyLmNvbSIsImlhdCI6MTczNjM5Mjk0NiwiZXhwIjoxNzM2Mzk2NTQ2fQ.vudjlTNBF1GM_6xEjTgPBfreo_DOJEZtZ-AimqDXcBM
+
+{
+  "name": "사무실",
+  "mac": "28F30D46D46B21B4"
+}
+
+###
+POST http://localhost:4000/api/v1/measure/28F30D46D46B21B3
+Content-Type: application/json
+
+{
+  "temp": 30.2
+}
+

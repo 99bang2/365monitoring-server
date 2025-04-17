@@ -1,0 +1,903 @@
+openapi: 3.0.3
+info:
+  title: 다올365 API
+  description: API
+  version: 1.0.0
+servers:
+  - url: https://api-dev.daoltalk.com/api/v1/daoltalk
+    description: Development Server
+  - url: https://api.daoltalk.com/api/v1/daoltalk
+    description: Production Server
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: ak
+  schemas:
+    Error:
+      type: object
+      properties:
+        errCode:
+          type: string
+          description: 에러코드
+        message:
+          type: string
+          description: 에러 메세지
+      required:
+        - errCode
+        - message
+      description: |
+        Error Codes:
+        | Code    | Message                         |
+        |---------|---------------------------------|
+        | `51006` | 데이터를 찾을 수 없음.          |
+        | `25002` | 금액 처리 실패(금액 없음).      |
+        | `24003` | 10초 이내에 호출이 불가능합니다.|
+        | `22002` | 미등록 발신번호.                |
+        | `31118` | 내부 시스템 오류.               |
+        | `29001` | 파라미터 오류.                  |
+    MessagePost:
+      type: object
+      properties:
+        uid:
+          type: integer
+          example: 1
+        status:
+          type: string
+          description: 상태
+          enum: [ "REQUEST","COMPLETE","FAILED","WAIT","CANCEL" ]
+          example: "REQUEST"
+        cliKey:
+          type: string
+          description: 문자개별 생성번호
+          example: "2yfimii01"
+        phone:
+          type: string
+          description: 수신번호
+          example: "01032540954"
+        mergeData:
+          type: object
+          description: 가변데이터
+          example: { "nation": "프랑스" }
+        messageUid:
+          type: integer
+          example: 1
+        message:
+          type: object
+          $ref: "#/components/schemas/Message"
+        companyUid:
+          type: integer
+          example: 1
+        reportInfo:
+          type: string
+          example: "성공"
+        reportCode:
+          type: integer
+        messageType:
+          type: string
+          example: "SMS"
+
+    Message:
+      type: object
+      properties:
+        uid:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "인사드립니다."
+        status:
+          type: string
+          enum: [ "COMPLETE","SENDING","WAIT","CANCEL" ]
+          example: "COMPLETE"
+        content:
+          type: string
+          example: "#{nation}에서 오신 #{name}님 안녕하세요"
+        type:
+          type: string
+          example: "LMS"
+          enum: [ "SMS","LMS","MMS" ]
+        templateCategory:
+          type: string
+          example: "info"
+        sendDate:
+          description: 보낸시간
+          type: date
+          example: '2021-07-22 17:58:17'
+          format: 'YYYY-MM-DD HH:mm:ss'
+        sendPath:
+          description: 전송경로
+          type: string
+          example: 'API'
+          enum: [ "WEB", "API" ]
+
+security:
+  - ApiKeyAuth: [ ]
+paths:
+  /msg/send:
+    post:
+      tags:
+        - 문자메세지
+      security:
+        - ApiKeyAuth: [ ]
+      summary: 문자전송
+      description: messageType에 따라 SMS 와 LMS를 전송하는 API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageType:
+                  type: string
+                  description: 메세지 유형
+                    * SMS : 단문 (90bytes 이하)
+                    * LMS : 장문
+                  example: 'SMS'
+                templateCategory:
+                  type: string
+                  description: 템플릿 타입
+                    * ad : 광고성
+                    * info : 정보성
+                  example: "info"
+                senderNumber:
+                  type: string
+                  description: 발신번호
+                  example: "01032453432"
+                title:
+                  type: string
+                  description: 메세지의 유형이 LMS일 경우 필수
+                  example: '안녕하세요'
+                content:
+                  type: string
+                  description: 문자내역
+                  example: '반갑습니다.'
+                isReserve:
+                  type: boolean
+                  description: "예약발송여부"
+                reserveDate:
+                  type: date
+                  example: '2021-07-22 17:58:00'
+                  format: 'YYYY-MM-DD HH:mm:00'
+                dataArray:
+                  type: Array
+                  description: 보내는 데이터 Array
+                  example: [ { "phone": "01033333838", "mergeData": { "name": "김민준", "nation": "대한민국" } , "cliKey": "141LSqvlm01"} ]
+
+      responses:
+        '200':
+          description: 성공여부
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /msg/mms/send:
+    post:
+      tags:
+        - 문자메세지
+      summary: MMS(이미지첨부 문자) 보내는 API
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                parts:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: 이미지 첨부 최대 3개까지
+                reqMsg:
+                  type: string
+                  description: |
+                    아래항목을 JSON.stringify로 전달
+                    * messageType       메세지 타입            => MMS
+                    * dataArray         보내는 데이터 Array    => [{"phone":"01033333838","mergeData":{"name":"김민준","nation":"대한민국"}}]
+                    * senderNumber      발신번호               => 01032453432
+                    * title             문자제목
+                    * content           문자내용                 
+                    * templateCategory  템플릿타입             => ad/info
+                    * isReserve         예약발송여부           => true/false
+                    * reserveDate       예약발송시간           => 2021-07-22 17:58:00
+      responses:
+        '200':
+          description: 성공여부
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /msg/cancel:
+    delete:
+      tags:
+        - 문자메세지
+      summary: 예약문자 취소
+      description: 예약된 문자를 취소하는 기능
+      parameters:
+        - in: query
+          name: uid
+          schema:
+            type: integer
+            required: true
+            description: "메세지 uid"
+      responses:
+        '200':
+          description: 예약취소결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: 총 취소된 건수
+                      cancelPrice:
+                        type: number
+                        format: float
+                        description: 환불된 금액
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /msg/post/cancel:
+    delete:
+      tags:
+        - 문자메세지
+      summary: 예약문자 개별취소
+      description: 예약된 문자를 개별로 취소하는 기능
+      parameters:
+        - in: query
+          name: uid
+          schema:
+            type: integer
+            required: true
+            description: "메세지포스트 uid"
+      responses:
+        '200':
+          description: 예약취소결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: 총 취소된 건수
+                      cancelPrice:
+                        type: number
+                        format: float
+                        description: 환불된 금액
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /msg/list:
+    get:
+      tags:
+        - 문자메세지
+      summary: 문자 목록
+      description: 보낸 문자의 목록을 반환
+      responses:
+        '200':
+          description: 문자 JSON Array
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          description: 문자 고유번호
+                          type: integer
+                          example: 1
+                        status:
+                          description: |
+                            상태
+                            * REQUEST : 전송요청
+                            * COMPLETE : 전송완료,
+                            * FAILED" : 전송오류,
+                            * WAIT" : 전송대기
+                            * CANCEL : 전송취소
+                          type: string
+                          example: 'COMPLETE'
+                        cliKey:
+                          description: 문자 개별 생성번호
+                          type: string
+                          example: '2yfimii01'
+                        phone:
+                          description: 수신번호
+                          type: string
+                          example: '01033540954'
+                        mergeData:
+                          description: 가변데이터
+                          type: object
+                          example: { "name": "김민준","nation": "대한민국" }
+                        reportInfo:
+                          description: 리포팅된정보
+                          type: string
+                          example: '성공'
+                        message:
+                          type: object
+                          properties:
+                            title:
+                              description: 제목
+                              type: string
+                              example: '안녕하세요'
+                            content:
+                              description: 내용
+                              type: string
+                              example: '반갑습니다.'
+                            type:
+                              description: |
+                                유형
+                                * SMS
+                                * LMS
+                              type: string
+                              example: 'SMS'
+                            sendDate:
+                              description: 보낸시간
+                              type: date
+                              example: '2021-07-22 17:58:17'
+                              format: 'YYYY-MM-DD HH:mm:ss'
+  /kko/send:
+    post:
+      tags:
+        - 카카오
+      summary: 카카오알림톡전송
+      description: 카카오알림톡 전송
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  description: "문자내용"
+                  example: "[#{service}]\n\n안녕하세요. #{name}님!\n\n#{service}에\n회원가입 해주셔서\n진심으로 감사드립니다~"
+                  type: string
+                dataArray:
+                  description: "가변 데이터 및 연락처정보가 담긴 배열"
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      phone:
+                        type: string
+                        example: "01032540954"
+                        description: "연락처"
+                      mergeData:
+                        type: object
+                        example: { "service": "다올톡", "name": "김민준" }
+                        description: "문자내용에 필요한 가변데이터"
+                templateCode:
+                  type: string
+                  description: "템플릿 코드"
+                isResend:
+                  type: boolean
+                  description: "재발송 여부 (true - 문자로 재발신)"
+                isReserve:
+                  type: boolean
+                  description: "예약발송여부"
+                reserveDate:
+                  type: date
+                  example: '2021-07-22 17:58:00'
+                  format: 'YYYY-MM-DD HH:mm:00'
+                senderKeyType:
+                  type: string
+                  description: "그룹템플릿으로 보낼때 'G' 세팅 그룹템플릿이 아닌경우 보낼 필요없음"
+                buttonForm:
+                  type: array
+                  description: "버튼의 이름, 타입, 링크주소 등, 버튼에 필요한 정보가 담긴 배열"
+                  items:
+                    type: object
+                    example: { "name": "클릭","linkType": "WL","linkMo": "http://m.naver.com","linkPc": "http://www.naver.com" }
+      responses:
+        '200':
+          description: 성공여부
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과 코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과 메세지"
+  /kko/cancel:
+    delete:
+      tags:
+        - 카카오
+      summary: 예약알림톡 취소
+      description: 예약된 알림톡을 취소하는 기능
+      parameters:
+        - in: query
+          name: uid
+          schema:
+            type: integer
+            description: 알림톡의 uid
+      responses:
+        '200':
+          description: 예약취소결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: 총 취소된 건수
+                      cancelPrice:
+                        type: number
+                        format: float
+                        description: 환불된 금액
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /kko/post/cancel:
+    delete:
+      tags:
+        - 카카오
+      summary: 예약알림톡 개별 취소
+      description: 예약된 알림톡을 개별로 취소하는 기능
+      parameters:
+        - in: query
+          name: clientKey
+          schema:
+            type: string
+            description: 개별 알림톡의 CLIENT_KEY
+      responses:
+        '200':
+          description: 예약취소결과
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: 총 취소된 건수
+                      cancelPrice:
+                        type: number
+                        format: float
+                        description: 환불된 금액
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+  /kko/template-all:
+    get:
+      tags:
+        - 카카오
+      summary: 카카오템플릿조회
+      description: 카카오템플릿 전체조회
+      parameters:
+        - in: query
+          name: kkoChId
+          schema:
+            type: string
+            required: true
+            description: "카카오 채널ID"
+        - in: query
+          name: senderKeyType
+          schema:
+            type: string
+            required: true
+            description: "개별 템플릿(S) , 그룹 템플릿(G)"
+        - in: query
+          name: keyword
+          schema:
+            type: string
+            description: "템플릿 코드나 템플릿명을 찾을 때 넣는 키워드"
+        - in: query
+          name: kkoGrpId
+          schema:
+            type: string
+            description: "그룹템플릿 조회시, 첨부할 카카오 그룹아이디"
+      responses:
+        '200' :
+          description: 성공여부
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          description: 템플릿 고유번호
+                          type: integer
+                          example: 1
+                        kkoChId:
+                          description: 카카오채널ID
+                          type: string
+                        templateCode:
+                          description: 템플릿 코드
+                          type: string
+                        templateName:
+                          description: 템플릿 명
+                          type: string
+                        templateStatusCode:
+                          description: |
+                            상태값
+                            * T: 저장
+                            * Q: 검수중
+                            * A: 승인
+                            * S: 반려
+                            * D: 삭제
+                          type: string
+                        senderKeyType:
+                          description: |
+                            타입
+                            * S: 개별
+                            * G: 그룹
+                        kkoGrpId:
+                          description: 카카오 그룹ID
+                          type: string
+                        templateContent:
+                          description: 템플릿내용
+                          type: string
+                        buttons:
+                          description: 버튼정보
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              linkType:
+                                type: string
+                              linkMo:
+                                type: string
+                              linkPc:
+                                type: string
+  /kko/template:
+    get:
+      tags:
+        - 카카오
+      summary: 카카오템플릿조회
+      description: 카카오템플릿 개별조회
+      parameters:
+        - in: query
+          name: kkoChId
+          schema:
+            type: string
+            required: true
+            description: "카카오 채널ID"
+        - in: query
+          name: senderKeyType
+          schema:
+            type: string
+            required: true
+            description: "개별 템플릿(S) , 그룹 템플릿(G)"
+        - in: query
+          name: templateCode
+          schema:
+            type: string
+            description: "템플릿 코드"
+        - in: query
+          name: kkoGrpId
+          schema:
+            type: string
+            description: "그룹템플릿 조회시, 첨부할 카카오 그룹아이디"
+      responses:
+        '200':
+          description: 성공여부
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          description: 템플릿 고유번호
+                          type: integer
+                          example: 1
+                        kkoChId:
+                          description: 카카오채널ID
+                          type: string
+                        templateCode:
+                          description: 템플릿 코드
+                          type: string
+                        templateName:
+                          description: 템플릿 명
+                          type: string
+                        templateStatusCode:
+                          description: |
+                            상태값
+                            * T: 저장
+                            * Q: 검수중
+                            * A: 승인
+                            * S: 반려
+                            * D: 삭제
+                          type: string
+                        senderKeyType:
+                          description: |
+                            타입
+                            * S: 개별
+                            * G: 그룹
+                        kkoGrpId:
+                          description: 카카오 그룹ID
+                          type: string
+                        templateContent:
+                          description: 템플릿내용
+                          type: string
+                        buttons:
+                          description: 버튼정보
+                          type: object
+
+  /report:
+    get:
+      tags:
+        - 리포트
+      summary: report 호출 API
+      description: 최대 100건 까지의 report를 호출한다. 81시간 이후에는 만료가 되고, 10초 이내에 재호출이 불가능하다.
+      responses:
+        '200':
+          description: report 목록
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과 코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과 메세지"
+                  data:
+                    type: object
+                    properties:
+                      reportKey:
+                        type: string
+                        description: "리포트를 나타내는 고유 KEY"
+                      reportCount:
+                        type: integer
+                        description: "리포트에 포함된 데이터의 건수"
+                      list:
+                        type: array
+                        description: "문자 정보가 담긴 배열"
+                        items:
+                          type: object
+                          description: "개별 문자정보"
+                          properties:
+                            cliKey:
+                              type: string
+                              description: "개별 문자를 나타내는 고유 KEY(클라이언트키)"
+                            ch:
+                              type: string
+                              enum: ["SMS", "LMS", "MMS","ALIMTALK"]
+                              description: "문자의 유형(SMS, LMS, MMS,알림톡)"
+                            reportInfo:
+                              type: string
+                              example: "성공"
+                              description: "상태 결과 설명"
+                            reportCode:
+                              type: string
+                              example: "10000"
+                              description: "상태 코드값"
+                            phone:
+                              type: string
+                              example: "01022223344"
+                              description: "전송 번호"
+                            sendDate:
+                              type: string
+                              format: date
+                              description: "전송일자"
+    post:
+      tags:
+        - 리포트
+      summary: report 처리결과 전달
+      description: 중복 수신을 방지하기 위해 report 확인을 해야합니다. 처리결과가 확인되지 않은경우 동일한 리포트가 다시 전달 됩니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reportKey:
+                  type: string
+                  description: report 요청시 받은 reportKey 첨부
+      responses:
+        '200':
+          description: report 처리결과 확인
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과 코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과 메세지"
+  /report/{clientKey}:
+    get:
+      tags:
+        - 리포트
+      summary: 개별 문자상태 조회
+      description: clientKey를 통해 문자를 개별로 조회 가능한 API
+      parameters:
+        - in: path
+          name: clientKey
+          required: true
+          schema:
+            type: string
+          description: 문자에 각각 부여된 고유 KEY (clientKey)
+      responses:
+        '200':
+          description: 개별 리포트정보
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: "10000"
+                        description: "결과코드"
+                      message:
+                        type: string
+                        example: '성공'
+                        description: "결과메세지"
+                  data:
+                    type: object
+                    properties:
+                      cliKey:
+                        type: string
+                        description: "개별 문자를 나타내는 고유 KEY(클라이언트키)"
+                      ch:
+                        type: string
+                        enum: [ "SMS", "LMS", "ALIMTALK" ]
+                        description: "문자의 유형(SMS, LMS, 알림톡)"
+                      reportInfo:
+                        type: string
+                        example: "성공"
+                        description: "상태 결과 설명"
+                      reportCode:
+                        type: string
+                        example: "10000"
+                        description: "상태 코드값"
+                      phone:
+                        type: string
+                        example: "01022223344"
+                        description: "전송 번호"
+                      sendDate:
+                        type: string
+                        format: date
+                        description: "전송일자"

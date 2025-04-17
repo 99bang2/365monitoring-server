@@ -1,0 +1,90 @@
+{
+    "success": {
+        "code": 200,
+        "message": "성공"
+    },
+    "created": {
+        "code": 201,
+        "message": "생성 완료"
+    },
+    "noContent": {
+        "code": 204,
+        "message": "데이터 없음"
+    },
+    "badRequest": {
+        "code": 400,
+        "message": "잘못된 요청"
+    },
+    "unauthorized": {
+        "code": 401,
+        "message": "비인가 유저"
+    },
+    "forbidden": {
+        "code": 403,
+        "message": "API 권한 없음"
+    },
+    "notFound": {
+        "code": 404,
+        "message": "해당 정보 없음"
+    },
+    "wrongParameter": {
+        "code": 405,
+        "message": "일치하는 데이터가 없음"
+    },
+    "tooManyRequest": {
+        "code": 429,
+        "message": "접속자 많음"
+    },
+    "serverError": {
+        "code": 500,
+        "message": "서버 오류"
+    },
+    "notImplemented": {
+        "code": 501,
+        "message": "API 없음"
+    },
+    "validationError": {
+        "code": 600,
+        "message": "데이터 검증 오류"
+    },
+    "validationUniqueError": {
+        "code": 601,
+        "message": "이미 존재하는 데이터입니다."
+    },
+    "certificationError": {
+        "code": 602,
+        "message": "본인인증 필요"
+    },
+    "customError": {
+        "code": 700,
+        "message": "기타 에러 상황 (서버 확인 필요)"
+    },
+    "existDeviceMac": {
+        "code": 701,
+        "message": "이미 기기 주소가 존재합니다"
+    },
+    "notExistModulerMac": {
+        "code": 702,
+        "message": "기기 주소가 존재하지 않습니다"
+    },
+    "notExistRecipientGroup": {
+        "code": 703,
+        "message": "수신인 그룹이 존재하지 않습니다"
+    },
+    "existRecipient": {
+        "code": 704,
+        "message": "이미 해당 수신인 정보가 존재합니다"
+    },
+    "notAllowNotify": {
+        "code": 705,
+        "message": "수신이 허용되지 않은 장비입니다"
+    },
+    "lockDuration": {
+        "code": 706,
+        "message": "수신자의 메세지가 잠금상태입니다."
+    },
+    "loginFailed": {
+        "code": 800,
+        "message": "로그인 실패"
+    }
+}

@@ -1,0 +1,65 @@
+{
+  "account": {
+    "grade": {
+      "SUPER": "슈퍼관리자",
+      "MANAGER": "관리자",
+      "STAFF": "일반"
+    }
+  },
+  "company": {
+    "settlementType": {
+      "PREPAID": "선불제",
+      "POSTPAID": "후불제"
+    }
+  },
+  "message": {
+    "status": {
+      "COMPLETE": "전송완료",
+      "SENDING": "전송중",
+      "WAIT": "전송대기",
+      "CANCEL": "예약취소"
+    },
+    "type": {
+      "SMS": "문자(단문형)",
+      "LMS": "문자(장문형)",
+      "MMS": "문자(이미지)"
+    }
+  },
+  "messagePost": {
+    "status": {
+      "REQUEST": "전송요청",
+      "COMPLETE": "전송요청완료",
+      "FAILED": "전송오류",
+      "SUCCESS": "전송완료",
+      "WAIT": "전송대기",
+      "CANCEL": "전송취소"
+    }
+  },
+  "depositLog": {
+    "type": {
+      "USE_MESSAGE": "메세지사용",
+      "USE_ALIMTALK": "알림톡사용",
+      "CHARGE": "충전",
+      "RESERVE_CANCEL": "예약취소",
+      "RESERVE_PARTIAL_CANCEL": "예약개별취소",
+      "RESERVE_ALIMTALK_CANCEL": "알림톡예약취소",
+      "RESERVE_ALIMTALK_PARTIAL_CANCEL": "알림톡예약개별취소",
+      "REFUND": "환불",
+      "MESSAGE_CANCEL": "예약발송오류"
+    }
+  },
+  "template": {
+    "type": {
+      "KKO": "카카오",
+      "MSG": "일반문자"
+    }
+  },
+  "chargeOrder": {
+    "status" : {
+      "WAIT": "결제대기",
+      "COMPLETE": "결제완료",
+      "CANCEL": "환불",
+      "ERROR": "비정상승인"
+    }
+  }
+}

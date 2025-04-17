@@ -1,0 +1,22 @@
+{
+	"development": {
+		"listenPort": 4000,
+		"jwt": {
+			"secret": "claw!@!@",
+			"expiresIn": "1h"
+		},
+		"MSG_API_KEY" : "09dce7d91bceea8e0c56b780b3f01ba07",
+		"API_URL": "https://api.daoltalk.com/api/v1/daoltalk",
+		"API_ENDPOINT": "http://localhost:4000/api/v1"
+	},
+	"production": {
+		"listenPort": 3000,
+		"jwt": {
+			"secret": "claw!@!@",
+			"expiresIn": "1h"
+		},
+		"MSG_API_KEY" : "09dce7d91bceea8e0c56b780b3f01ba07",
+		"API_URL": "https://api.daoltalk.com/api/v1/daoltalk",
+		"API_ENDPOINT" : "http://1.234.27.145:5000/api/v1"
+	}
+}
